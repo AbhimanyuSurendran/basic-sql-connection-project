@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Employee Management</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <h1>Employee Management SQL Application</h1>
+
+  <form id="userForm">
+    <input type="text" id="name" placeholder="Name" required />
+    <input type="number" id="age" placeholder="Age" required />
+    <input type="text" id="department" placeholder="Department" required />
+    <button type="submit">Add Employee</button>
+  </form>
+
+  <ul id="userList"></ul>
+
+  <style>
+    body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 30px;
+  background-color: #0d1117;
+  color: #c9d1d9;
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+h1 {
+  text-align: center;
+  color: #58a6ff;
+  font-size: 2em;
+  margin-bottom: 30px;
+}
+
+form {
+  background: transparent;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 25px rgba(0, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+input {
+  background: #0d1117;
+  border: 1px solid #30363d;
+  padding: 12px;
+  border-radius: 8px;
+  color: #c9d1d9;
+  font-size: 1rem;
+  transition: border 0.3s ease;
+}
+
+input:focus {
+  border-color: #58a6ff;
+  outline: none;
+  box-shadow: 0 0 10px rgba(88, 166, 255, 0.3);
+}
+
+button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #0ea5e9, #3b82f6);
+  color: #ffffff;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4);
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  background: #161b22;
+  margin-bottom: 15px;
+  padding: 15px;
+  border-radius: 10px;
+  border-left: 4px solid #58a6ff;
+    border-right: 4px solid #58a6ff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  animation: fadeIn 0.3s ease-in;
+}
+
+li button {
+  margin-left: 10px;
+  background: #21262d;
+  border: 1px solid #30363d;
+  color: #58a6ff;
+  padding: 6px 10px;
+  font-size: 0.9rem;
+  transition: background 0.3s ease;
+}
+
+li button:hover {
+  background: #30363d;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+  </style>
+
+  <script>
+    const API_URL = "/users";
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("userForm");
+      const nameInput = document.getElementById("name");
+      const ageInput = document.getElementById("age");
+      const deptInput = document.getElementById("department");
+      const userList = document.getElementById("userList");
+
+      function fetchUsers() {
+        fetch(API_URL)
+          .then((res) => res.json())
+          .then((users) => {
+            userList.innerHTML = "";
+            users.forEach((user) => {
+              const li = document.createElement("li");
+              li.innerHTML = `
+                <strong>${user.Employee_Name}</strong> 
+                (Age: ${user.Employee_Age}, Dept: ${user.Employee_Department}, Joined: ${new Date(user.Employee_Joining_Date).toLocaleString()})
+                <button onclick='editUser(${user.Employee_ID}, "${user.Employee_Name}", ${user.Employee_Age}, "${user.Employee_Department}")'>Edit</button>
+                <button onclick="deleteUser(${user.Employee_ID})">Delete</button>
+                
+              `;
+              userList.appendChild(li);
+            });
+          });
+      }
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const name = nameInput.value.trim();
+        const age = parseInt(ageInput.value);
+        const department = deptInput.value.trim();
+
+        if (!name || !age || !department) return;
+
+        fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, age, department }),
+        })
+        .then((res) => res.json())
+        .then(() => {
+          form.reset();
+          fetchUsers();
+        });
+      });
+
+
+
+      window.editUser = function (id, currentName, currentAge, currentDept) {
+        const name = prompt("Enter new name", currentName);
+        const age = prompt("Enter new age", currentAge);
+        const department = prompt("Enter new department", currentDept);
+        if (name && age && department) {
+          fetch(`${API_URL}/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, age: parseInt(age), department }),
+          }).then(() => fetchUsers());
+        }
+      };
+      window.deleteUser = function (id) {
+        fetch(`${API_URL}/${id}`, { method: "DELETE" })
+          .then(() => fetchUsers());
+      };
+      fetchUsers();
+    });
+  </script>
+</body>
+</html>
