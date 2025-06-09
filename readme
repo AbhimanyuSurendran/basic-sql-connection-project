@@ -1,2 +1,19 @@
-run this :- node index.js
-in order to execute the code
+1. Install Node.js and MySQL on your system.
+2. Create a new directory for your project and navigate into it:
+3. Write the following code in MySQL to create a database and a table:
+        create database crud_app;
+            use crud_app;
+            CREATE TABLE users (
+            Employee_ID INT AUTO_INCREMENT PRIMARY KEY,
+            Employee_Name VARCHAR(100) NOT NULL,
+            Employee_Age INT NOT NULL,
+            Employee_Department VARCHAR(100) NOT NULL,
+            Employee_Joining_Date DATETIME DEFAULT CURRENT_TIMESTAMP
+            );
+
+            select * from users;
+
+
+
+4. To run your Node.js application, execute:
+            node index.js in order to execute the code
